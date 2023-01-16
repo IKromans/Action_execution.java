@@ -26,11 +26,12 @@ public class SchedulerService {
         DayOfWeek currentDay = now.getDayOfWeek();
         List<ScheduledAction> actions = csvDataLoaderAndParser.getScheduledActions();
         for (ScheduledAction action : actions) {
-            if (isTimeForAction(now, action) && isDayForAction(now, currentDay, action) && isNotLastExecutionWithinOneMinute(now)) {
+            if ((isTimeForAction(now, action) && isDayForAction(now, currentDay, action) && isNotLastExecutionWithinOneMinute(now))) {
                 LOGGER.info("Executing action.");
                 lastExecutionTime = now;
             }
         }
+        csvDataLoaderAndParser.getScheduledActions().clear();
     }
 
     private boolean isTimeForAction(LocalDateTime now, ScheduledAction action) {

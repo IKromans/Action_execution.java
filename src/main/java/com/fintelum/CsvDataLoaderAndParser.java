@@ -1,6 +1,5 @@
 package com.fintelum;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +19,6 @@ public class CsvDataLoaderAndParser {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
     private final List<ScheduledAction> scheduledActions = new ArrayList<>();
 
-    @PostConstruct
     public void loadAndParseDataFromCsv() {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new ClassPathResource("scheduler.csv").getInputStream()))) {
             String line;
