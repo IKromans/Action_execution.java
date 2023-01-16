@@ -7,10 +7,12 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Service
 public class SchedulerService {
 
+    private final Logger LOGGER = Logger.getLogger(ScheduledAction.class.getName());
     private final CsvDataLoaderAndParser csvDataLoaderAndParser;
     private LocalDateTime lastExecutionTime = LocalDateTime.MIN;
     public SchedulerService(CsvDataLoaderAndParser csvDataLoaderAndParser) {
@@ -24,14 +26,22 @@ public class SchedulerService {
         DayOfWeek currentDay = now.getDayOfWeek();
         List<ScheduledAction> actions = csvDataLoaderAndParser.getScheduledActions();
         for (ScheduledAction action : actions) {
-            if (now.toLocalTime().isAfter(action.time()) || now.toLocalTime().equals(action.time())) {
-                if (now.toLocalTime().isBefore(action.time().plusMinutes(1)) && action.isBitmaskMatch(currentDay)) {
-                    if (now.isAfter(lastExecutionTime.plusMinutes(1))){
-                        System.out.println("Executing action.");
-                        lastExecutionTime = now;
-                    }
-                }
+            if (isTimeForAction(now, action) && isDayForAction(currentDay, action) && isNotLastExecutionWithinOneMinute(now)) {
+                LOGGER.info("Executing action.");
+                lastExecutionTime = now;
             }
         }
+    }
+
+    private boolean isTimeForAction(LocalDateTime now, ScheduledAction action) {
+        return now.toLocalTime().isAfter(action.time()) || now.toLocalTime().equals(action.time());
+    }
+
+    private boolean isDayForAction(DayOfWeek currentDay, ScheduledAction action) {
+        return action.isBitmaskMatch(currentDay);
+    }
+
+    private boolean isNotLastExecutionWithinOneMinute(LocalDateTime now) {
+        return now.isAfter(lastExecutionTime.plusMinutes(1));
     }
 }
