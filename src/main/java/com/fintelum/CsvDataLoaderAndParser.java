@@ -2,12 +2,10 @@ package com.fintelum;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -20,13 +18,11 @@ public class CsvDataLoaderAndParser {
 
     private final Logger LOGGER = Logger.getLogger(ScheduledAction.class.getName());
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
-    private final Resource csvFileResource = new ClassPathResource("scheduler.csv");
     private final List<ScheduledAction> scheduledActions = new ArrayList<>();
 
     @PostConstruct
     public void loadAndParseDataFromCsv() {
-        try (InputStream csvData = csvFileResource.getInputStream();
-             BufferedReader br = new BufferedReader(new InputStreamReader(csvData))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new ClassPathResource("scheduler.csv").getInputStream()))) {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.startsWith("time")) {
@@ -39,6 +35,7 @@ public class CsvDataLoaderAndParser {
             }
         } catch (IOException e) {
             LOGGER.info("Error loading \"scheduler.csv\" file.");
+            System.exit(1);
         }
     }
 

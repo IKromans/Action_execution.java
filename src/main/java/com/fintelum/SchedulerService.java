@@ -12,9 +12,9 @@ import java.util.logging.Logger;
 @Service
 public class SchedulerService {
 
-    private final Logger LOGGER = Logger.getLogger(ScheduledAction.class.getName());
     private final CsvDataLoaderAndParser csvDataLoaderAndParser;
     private LocalDateTime lastExecutionTime = LocalDateTime.MIN;
+    private final Logger LOGGER = Logger.getLogger(ScheduledAction.class.getName());
     public SchedulerService(CsvDataLoaderAndParser csvDataLoaderAndParser) {
         this.csvDataLoaderAndParser = csvDataLoaderAndParser;
     }
@@ -26,7 +26,7 @@ public class SchedulerService {
         DayOfWeek currentDay = now.getDayOfWeek();
         List<ScheduledAction> actions = csvDataLoaderAndParser.getScheduledActions();
         for (ScheduledAction action : actions) {
-            if (isTimeForAction(now, action) && isDayForAction(currentDay, action) && isNotLastExecutionWithinOneMinute(now)) {
+            if (isTimeForAction(now, action) && isDayForAction(now, currentDay, action) && isNotLastExecutionWithinOneMinute(now)) {
                 LOGGER.info("Executing action.");
                 lastExecutionTime = now;
             }
@@ -37,8 +37,8 @@ public class SchedulerService {
         return now.toLocalTime().isAfter(action.time()) || now.toLocalTime().equals(action.time());
     }
 
-    private boolean isDayForAction(DayOfWeek currentDay, ScheduledAction action) {
-        return action.isBitmaskMatch(currentDay);
+    private boolean isDayForAction(LocalDateTime now, DayOfWeek currentDay, ScheduledAction action) {
+        return now.toLocalTime().isBefore(action.time().plusMinutes(1)) && action.isBitmaskMatch(currentDay);
     }
 
     private boolean isNotLastExecutionWithinOneMinute(LocalDateTime now) {
